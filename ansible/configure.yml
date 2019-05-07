@@ -1,0 +1,82 @@
+---
+- hosts: all
+  roles:
+    # Install Docker
+    - role: docker
+      become: yes
+    # ELK Beats
+    - { role: "elk-beats", beat: "filebeat", beat_conf: {
+        "filebeat": {
+            "prospectors": [{
+              "paths": ["/var/log/*.log"],
+              "input_type": "log"
+            }],
+            "registry_file": "/var/lib/filebeat/registry"
+          }
+        },
+        output_conf : {
+          "logstash": {
+            "hosts": ["{{ vagrant_vm_ip }}:5000"]
+          }
+        }
+      }
+    - { role: "elk-beats", beat: "metricbeat", beat_conf: {
+        "dashboards.enabled": true,
+        "metricbeat.modules": [{
+            "module": "system",
+            "metricsets": ["cpu", "filesystem", "network", "process"],
+            "enabled": true,
+            "period": "10s",
+            "processes": [".*"],
+            "cpu_ticks": false
+          }, {
+            "module": "docker",
+            "metricsets": ["container", "cpu", "diskio", "healthcheck", "info", "memory", "network"],
+            "enabled": true,
+            "period": "10s",
+            "hosts": ["unix:///var/run/docker.sock"]
+          }]
+        },
+        output_conf : {
+          "elasticsearch": {
+            "hosts": ["{{ vagrant_vm_ip }}:9200"],
+            "protocol": "http",
+            "username": "elastic",
+            "password": "changeme"
+          }
+        }
+      }
+    - { role: "elk-beats", beat: "packetbeat", beat_conf: {
+          "interfaces": {
+            "device": "any"
+          },
+          "protocols": {
+            "http": {
+              "ports": [80]
+            },
+            "mongodb": {
+              "ports": [27017]
+            }
+          }
+        },
+        output_conf : {
+          "elasticsearch": {
+            "hosts": ["{{ vagrant_vm_ip }}:9200"]
+          }
+        }
+      }
+  tasks:
+    # The docker_compose | docker_system Ansible modules
+    # require too many deps. Just use shell to bring up services
+    - name: Start App and DB
+      shell: |
+        cd {{ mount_point }}
+        /usr/local/bin/docker-compose up -d
+      args:
+        executable: /bin/bash
+    - name: Start ELK Stack
+      shell: |
+        cd {{ mount_point }}/monitoring
+        /usr/local/bin/docker-compose up -d
+      args:
+        executable: /bin/bash

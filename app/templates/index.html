@@ -1,0 +1,108 @@
+<html>
+
+{% include 'head.html' %}
+
+  <body>
+
+    <div class="container">
+      <div class="row">
+        <div class="col-md-12">
+
+          <div class="newspaper">
+            <!-- Create task -->
+              <form method="POST">
+                  {{ cform.hidden_tag() }}
+                  <fieldset>
+                      <legend>Create Task</legend>
+                      {{ cform.title.label }}<br>
+                      {{ cform.title }}<br>
+                      {{ cform.shortdesc.label }}<br>
+                      {{ cform.shortdesc }}<br>
+                      {{ cform.priority.label }}<br>
+                      {{ cform.priority }}<br><br>
+                      {{ cform.create }}
+                  </fieldset>
+              </form>
+
+              <!-- Update task -->
+              <form  method="POST">
+                  {{ uform.hidden_tag() }}
+                  <fieldset>
+                      <legend>Update Task Description</legend>
+                      {{ uform.key.label }}<br>
+                      {{ uform.key }}<br>
+                      {{ uform.shortdesc.label }}<br>
+                      {{ uform.shortdesc }}<br><br>
+                      {{ uform.update }}
+                  </fieldset>
+              </form>
+
+              <!-- Delete task -->
+              <form method="POST">
+                  {{ dform.hidden_tag() }}
+                  <fieldset>
+                      <legend>Delete Task</legend>
+                      {{ dform.key.label }}<br>
+                      {{ dform.key }}<br><br>
+                      {{ dform.delete }}
+                  </fieldset>
+              </form>
+
+              <!-- Reset all data -->
+              <form method="POST">
+                  {{ reset.hidden_tag() }}
+                  <h4>Reset All Data</h4> {{ reset.reset }}
+              </form>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <hr/>
+
+    <!-- Task list -->
+    <h3>Tasks</h3>
+    <script>
+    $(document).ready(function() {
+      $('#tasklist').DataTable();
+    });
+    </script>
+
+    <table id="tasklist" class="table table-striped table-inverse table-bordered table-hover">
+      <!-- Header -->
+      <thead>
+       <tr>
+         <th>Task ID</th>
+         <th>Title</th>
+         <th>Short Description</th>
+         <th>Priority</th>
+       </tr>
+     </thead>
+
+     <!-- Rows -->
+      {% for i in data %}
+        <tr>
+            <td>{{ i["id"] }}</td>
+            <td>{{ i["title"] }}</td>
+            <td>{{ i["shortdesc"] }}</td>
+            <td>{{ i["priority"] }}</td>
+        </tr>
+      {% endfor %}
+
+      <!-- Footer -->
+      <!--
+      <tfoot>
+        <tr>
+          <th>Task ID</th>
+          <th>Title</th>
+          <th>Short Description</th>
+          <th>Priority</th>
+        </tr>
+      </tfoot>
+      -->
+
+     </table>
+
+  </body>
+</html>

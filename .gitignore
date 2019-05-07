@@ -1,0 +1,16 @@
+# OS-specific
+.DS_Store
+
+# Swapfiles
+.*.sw?
+*~
+
+# Vagrant
+.vagrant/
+
+# Python
+*.pyc
+__pycache__/
+
+# Ansible
+*.retry
